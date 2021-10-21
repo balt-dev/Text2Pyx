@@ -3,7 +3,6 @@ import traceback
 import re
 import time
 import flask
-import waitress
 import flask_limiter  
 
 from PIL import Image
