@@ -59,14 +59,17 @@ def generate():
     raise AssertionError("invalid")
   assert height*width*scale <= 921600, "toobig"
   pal={}
-  if '3h' in q:
-    for i,r,g,b,a in wrap(q['p'],5):
-      assert not(eval('u'+repr(i)).isnumeric()), "invalid"
-      pal[i]=(int(r*2,16),int(g*2,16),int(b*2,16),int(a*2,16))
-  else:
-    for i,ra,rb,ga,gb,ba,bb,aa,ab in wrap(q['p'],9):
-      assert not(eval('u'+repr(i)).isnumeric()), "invalid"
-      pal[i]=(int(ra+rb,16),int(ga+gb,16),int(ba+bb,16),int(aa+ab,16))
+  try:
+    if '3h' in q:
+        for i,r,g,b,a in wrap(q['p'],5):
+          assert not(eval('u'+repr(i)).isnumeric()), "invalid"
+          pal[i]=(int(r*2,16),int(g*2,16),int(b*2,16),int(a*2,16))
+    else:
+        for i,ra,rb,ga,gb,ba,bb,aa,ab in wrap(q['p'],9):
+          assert not(eval('u'+repr(i)).isnumeric()), "invalid"
+          pal[i]=(int(ra+rb,16),int(ga+gb,16),int(ba+bb,16),int(aa+ab,16))
+  except ValueError:
+    raise AssertionError("invalid")
   dat = []
   for n in re.split(r'(\d+)',q['d']):
     if eval('u'+repr(n)).isnumeric():
