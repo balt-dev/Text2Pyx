@@ -30,11 +30,11 @@ def handle_ratelimit(e):
 @limiter.limit('1 per second')
 def handle_assertion(e):
   if str(e) == "invalid":
-    return flask.render_template('assertions/invalid.html'), 400
+    return flask.render_template('assertions/invalid.html'), 200
   elif str(e) == "incomplete":
-    return flask.render_template('assertions/incomplete.html'), 400
+    return flask.render_template('assertions/incomplete.html'), 200
   else:
-    return flask.render_template('assertions/toobig.html'), 400
+    return flask.render_template('assertions/toobig.html'), 200
 
 
 @app.errorhandler(Exception)
