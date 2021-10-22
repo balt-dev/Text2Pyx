@@ -30,8 +30,8 @@ def handle_assertion(e):
 def handle_exception(e):
   return '<br>'.join(traceback.format_exception(type(e), e, e.__traceback__)), 500
 
-@app.route("/generate/")
 @app.route("/generate")
+@app.route("/generate/")
 @cache.cached(timeout=50,query_string=True)
 def generate():
   ti=time.time()
