@@ -3,8 +3,6 @@ import traceback
 import re
 import time
 import flask
-import flask_limiter  
-
 from PIL import Image
 from io import BytesIO
 from flask_caching import Cache
@@ -16,18 +14,9 @@ app = flask.Flask(__name__,
             static_url_path='', 
             static_folder='static/',
             template_folder='static/')
-limiter = flask_limiter.Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["1000 per second"]
-)
 cache.init_app(app)
 
-@app.errorhandler(flask_limiter.errors.RateLimitExceeded)
-def handle_ratelimit(e):
-  return '<h1 tabindex=2 style="text-align: center; width: auto; height: auto;">Ratelimit exceeded!</h1>', 429
 @app.errorhandler(AssertionError)
-@limiter.limit('1 per second')
 def handle_assertion(e):
   if str(e) == "invalid":
     return flask.render_template('assertions/invalid.html'), 200
@@ -38,12 +27,11 @@ def handle_assertion(e):
 
 
 @app.errorhandler(Exception)
-@limiter.limit('1 per second')
 def handle_exception(e):
   return '<br>'.join(traceback.format_exception(type(e), e, e.__traceback__)), 500
 
 @app.route("/generate/")
-@limiter.limit('8 per minute')
+@cache.cached(timeout=50,query_string=True)
 def generate():
   ti=time.time()
   q=flask.request.args
@@ -85,12 +73,10 @@ def generate():
     return response
 
 @app.route('/')
-@limiter.exempt
 @cache.cached(timeout=None)
 def home():
   return flask.render_template('home.html')
 
-@limiter.exempt
 @app.route('/favicon.ico')
 def favicon():
   return flask.send_from_directory('static/','favicon.ico', mimetype='image/vnd.microsoft.icon')
