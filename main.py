@@ -96,4 +96,4 @@ def home():
 def favicon():
   return flask.send_from_directory('static/','favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-app.run(threaded=True)
+app.run(threaded=True, debug=False)
