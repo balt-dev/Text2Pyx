@@ -3,6 +3,7 @@ body{
   height: 100%;
   background-attachment: fixed;
   background-position: center;
+  overflow-wrap: break-word;
 }
 div[id="foreground"]{
   font-family: 'Raleway';
