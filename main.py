@@ -44,7 +44,6 @@ def handle_exception(e):
 
 @app.route("/generate/")
 @limiter.limit('8 per minute')
-@cache.cached(timeout=50,query_string=True)
 def generate():
   ti=time.time()
   q=flask.request.args
