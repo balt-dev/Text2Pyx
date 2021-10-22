@@ -32,7 +32,7 @@ def handle_assertion(e):
   if str(e) == "invalid":
     return flask.render_template('assertions/invalid.html'), 200
   elif str(e) == "incomplete":
-    return flask.render_template('assertions/incomplete.html'), 200
+    return flask.render_template('assertions/incomplete.html'), 200   #i'd return a 400 but discord doesn't embed those
   else:
     return flask.render_template('assertions/toobig.html'), 200
 
