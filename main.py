@@ -43,8 +43,7 @@ def handle_assertion(e):
 def handle_exception(e):
   with open('static/generic-error.html') as f:
     result = f.read()
-  result.replace('\{REPLACEME\}','<br>'.join(traceback.format_exception(type(e), e, e.__traceback__)))
-  return result, 500
+  return result.replace('\{REPLACEME\}','<br>'.join(traceback.format_exception(type(e), e, e.__traceback__))), 500
 
 @app.route("/generate/")
 @app.route("/generate")
