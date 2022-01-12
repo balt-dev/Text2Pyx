@@ -57,7 +57,7 @@ def generate():
     assert scale > 0
   except:
     raise AssertionError("invalid")
-  assert height*width*scale <= 921600, "toobig"
+  assert height*width*scale*scale <= 921600, "toobig"
   pal={}
   try:
     if '3h' in q:
