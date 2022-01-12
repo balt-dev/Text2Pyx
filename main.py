@@ -86,7 +86,7 @@ def generate():
     try:
       im[i//width][i%width]=pal[t]
     except:
-      assert false, 'invalid'
+      raise AssertionError("invalid")
   with BytesIO() as out:
     i=Image.fromarray(im)
     i.resize((int(i.width*scale),int(i.height*scale)),Image.NEAREST).save(out, format='png')
