@@ -57,7 +57,7 @@ def generate():
     width = int(q['w'])
     height = int(q['h'])
     scale = float(q['m']) if 'm' in q else 1
-    assert scale > 0
+    assert all(n > 0 for n in [width,height,scale])
   except:
     raise AssertionError("invalid")
   assert height*width*scale*scale <= 921600, "toobig"
