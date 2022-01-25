@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Text2Pyx</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<meta content="Conversion - Text2Pyx" property="og:title" />
+		<meta content="This website allows you to create images by just linking an arbitrary URL. This could be useful for things like Carl-bot."
+		property="og:description" />
+		<meta content="#36c1b6" data-react-helmet="true" name="theme-color" />
+		<meta content="https://text2pyx.herokuapp.com/convert.html" property="og:url" />
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div id="foreground">
+			<a href='https://text2pyx.herokuapp.com/' tabindex=1 style='float: left; margin: 6px; '>Home</a><br>
+			<h1 tabindex=1.5>Image Conversion</h1>
+			<label for="wlist"  tabindex=3>Palette Whitelist</label><br>
+			<input id="wlist" tabindex=3.5 placeholder='ABCDEFGHIJK' oninput="document.getElementById('wlist').value = Array.from(new Set(document.getElementById('wlist').value.split(''))).join('');"></input>
+			<br>
+			<Br>
+			<label for='fileinput' tabindex=6>Choose an image file<br><span class="small"><i>max 921600 pixels</i></span></label><br>
+			<input type="file" id='fileinput' accept="image/*" onchange='display(event);'></input>
+			<img id='display'></img><br><p></p>
+			<label for="genbutton" class="genbutton" tabindex=7>Convert</label>
+			<input type="button" id="genbutton" onclick="generate()"></input>
+			<br><br>
+			<details id='output-details'>
+				<summary tabindex=8><b>Output<b></summary>
+					<br>
+					<div class='output' id='output' tabindex=9>Output goes here...</span>
+			</details>
+			<p><span class='small' tabindex=15>This page may not work in Internet Explorer. Please use something else.</span></p>
+		</div>
+		<p id="credits" tabindex=100>Discord: <a href="discord://discord.com/users/581685961205874718">@balt#6423</a><br>Email: <a href="mailto:heptor42@gmail.com">heptor42@gmail.com</a><br>Hosted with <a href="https://www.heroku.com/">Heroku</a><br>Created with <a href="https://flask.palletsprojects.com/">Flask</a><br><a href="https://github.com/balt-is-you-and-shift/Text2Pyx">GitHub Page</a><br><br><i id="disclaimer">Please do not use this site for NFTs.</i></p>
+		<script>
+			/*
+			This would've taken like 20 minutes if I were to do it in Python, but since that's server-side and there's no reason to do this server-side, I did it in JS.
+			This took me probably around 8 hours to make, and it's janky as fuck.
+			Help.
+			*/
+
+			// from https://stackoverflow.com/a/70637669
+			function newContext({width, height}, contextType = '2d') {
+				const canvas = document.createElement('canvas');
+				canvas.width = width;
+				canvas.height = height;
+				return canvas.getContext(contextType);
+			}
+
+			// from https://stackoverflow.com/a/22015930/13290530
+			const zip = (a, b) => a.map((k, i) => [k, b[i]]);
+
+			// from https://stackoverflow.com/a/9716488/13290530
+			function isNumeric(n) {
+				return !isNaN(parseFloat(n)) && isFinite(n);
+			}
+
+			// from https://stackoverflow.com/a/3579899/13290530
+			Array.prototype.byCount= function(){
+				var itm, a= [], L= this.length, o= {};
+				for(var i= 0; i<L; i++){
+						itm= this[i];
+						if(!itm) continue;
+						if(o[itm]== undefined) o[itm]= 1;
+						else ++o[itm];
+				}
+				for(var p in o) a[a.length]= p;
+				return a.sort(function(a, b){
+						return o[b]-o[a];
+				});
+			}
+
+			function display(e){
+				let input = event.target
+				if (input.files && input.files[0]) { 
+					document.getElementById('display').src = URL.createObjectURL(input.files[0]);
+				}
+			}
+
+			function sum(a){
+				let x = 0;
+				for (let i in a) {
+					x += a[i];
+				}
+				return x;
+			}
+
+			function diff(a,b){
+				let x = [];
+				for(var i = 0;i<=b.length-1;i++){
+					x.push(Math.abs(a[i] - b[i]));
+				}
+				return x;
+			}
+
+			function generate(){
+				if (document.getElementById('wlist').value != '') {
+					let img = document.getElementById('display');
+					let width = img.naturalWidth;
+					let height = img.naturalHeight;
+					if (width*height > 921600) {return;}
+					var data = new Array();
+					let paletteIndexes = document.getElementById('wlist').value.split('');
+					let ctx = newContext({width: width, height: height});
+					ctx.clearRect(0, 0, width, height);
+					ctx.drawImage(img,0,0);
+					let imgData = ctx.getImageData(0, 0, width, height).data;
+					var palette = new Array();
+					for (var i = 0; i < imgData.length; i += 4) {
+						let [r,g,b,a] = imgData.slice(i,i+4);
+						palette.push([r,g,b,a].toString());
+					}
+					palette = palette.byCount();
+					console.log(palette)
+					let palTemp = new Array();
+					for (var i = 0; i < palette.length; i += 1) {
+						let l = palette[i].split(',');
+						l = l.map(function(n) {return parseInt(n);});
+						palTemp.push(l);
+					}
+					palette = palTemp;
+					console.log(palette)
+					paletteIndexes = paletteIndexes.slice(0,palette.length);
+					palette = palette.slice(0,paletteIndexes.length);
+					reversePalette = Object.fromEntries(new Map(zip(palette,paletteIndexes)));
+					function limitColors(color){
+						let pal = Object.keys(reversePalette);
+						if (pal.indexOf(color.join(',')) != -1){
+							return color;
+						} else {
+							let closestColor = [0,0,0,0];
+							let closestValue = 1020;
+							pal.forEach(function(paletteColor){
+								if (sum(diff(paletteColor,color)) < closestValue){
+									closestColor = paletteColor;
+									closestValue = sum(diff(paletteColor,color));
+								};
+							});
+							return closestColor;
+						}
+					}
+					for (var i = 0; i < imgData.length; i += 4) {
+						let p = reversePalette[limitColors(imgData.slice(i,i+4)).toString()];
+						if (data[data.length-1] == p) {
+							data.push(2);
+						} else if (isNumeric(data[data.length-1]) && data[data.length-2] == p) {
+							data[data.length-1] += 1;
+						} else {
+							data.push(p);
+						}
+					}
+					palette = Object.fromEntries(new Map(zip(paletteIndexes,palette)));
+					paletteString = new Array();
+					for (var i = 0; i < paletteIndexes.length; i += 1) {
+						paletteString.push(paletteIndexes[i]);
+						var palColor = palette[paletteIndexes[i]];
+						for (var j = 0; j < 4; j += 1) {
+							paletteString.push(palColor[j].toString(16).padStart(2,'0'))
+						}
+					}
+					let final = 'https://text2pyx.herokuapp.com/generate?w='+width+'&h='+height+'&p='+paletteString.join('')+'&d='+data.join('')
+					if (final.length > 4094){
+						document.getElementById('output').innerHTML = 'Error! The URL is too large.<br>Try downscaling the image and using the <code>&m</code> query.';
+					} else {
+						document.getElementById('output').innerHTML = final;
+					}
+				} else {
+					document.getElementById('output').innerHTML = 'Error! You need to set a whitelist for the palette.<br>The amount of characters in the whitelist equals the amount of colors in the image.';
+					document.getElementById("wlist").focus();
+				}
+			}
+		</script>
+  </body>
+</html>
