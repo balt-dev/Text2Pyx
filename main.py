@@ -30,11 +30,11 @@ def handle_ratelimit(e):
 @limiter.limit('1 per second')
 def handle_assertion(e):
   if str(e) == "invalid":
-    return flask.render_template('assertions/invalid.html'), 200
+    return flask.render_template('assertions/invalid.html'), 400
   elif str(e) == "incomplete":
-    return flask.render_template('assertions/incomplete.html'), 200   #i'd return a 400 but discord doesn't embed those
+    return flask.render_template('assertions/incomplete.html'), 400
   else:
-    return flask.render_template('assertions/toobig.html'), 200
+    return flask.render_template('assertions/toobig.html'), 400
 
 
 @app.errorhandler(Exception)
@@ -92,7 +92,6 @@ def generate():
     i.resize((int(i.width*scale),int(i.height*scale)),Image.NEAREST).save(out, format='png')
     response = flask.Response(response=out.getvalue(),status=200)
     response.headers.set('Content-Type','image/png')
-    print(f'{round((time.time()-ti)*1000)}ms with a {i.width}x{i.height} image')
     return response
 
 @app.route('/')
